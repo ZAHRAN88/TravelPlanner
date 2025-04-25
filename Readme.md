@@ -13,8 +13,8 @@ This guide provides comprehensive instructions for setting up and running the ap
 
 1. **Clone the Repository**
    ```bash
-   git clone <repository-url>
-   cd <repository-name>
+   git clone https://github.com/ZAHRAN88/TravelPlanner.git
+   cd TravelPlanner
    ```
 
 2. **Create a Virtual Environment**
