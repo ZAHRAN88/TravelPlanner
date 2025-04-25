@@ -9,17 +9,26 @@ import json
 from datetime import datetime, timedelta
 
 # Load environment variables
-load_dotenv()
+if os.path.exists('.env'):
+    load_dotenv()
+elif not os.getenv('GEMINI_API_KEY'):
+    # For PythonAnywhere deployment
+    os.environ['GEMINI_API_KEY'] = 'AIzaSyCFkcVDnBXX123GCjEwV54IjXA1V8-1Vtg'
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
-# Configure Google Generative AI
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    raise ValueError("GEMINI_API_KEY not found in environment variables")
-genai.configure(api_key=api_key)
+try:
+    # Configure Google Generative AI
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY not found in environment variables")
+    genai.configure(api_key=api_key)
+except Exception as e:
+    print(f"Error configuring Gemini AI: {str(e)}")
+    print(f"Current environment variables: {os.environ.get('GEMINI_API_KEY', 'Not set')}")
+    raise
 
 def get_weather_recommendation(season):
     """
@@ -304,6 +313,14 @@ def get_safety_tips():
         "Keep digital copies of important documents"
     ]
 
+@app.route('/')
+def home():
+    return jsonify({
+        "status": "healthy",
+        "message": "API is running",
+        "environment": os.getenv('ENVIRONMENT', 'development')
+    })
+
 @app.route('/api/generate-travel-plan', methods=['POST'])
 def generate_travel_plan():
     """
@@ -519,8 +536,12 @@ def safety_tips():
 if __name__ == '__main__':
     print("Starting server...")
     print(f"Current directory: {os.getcwd()}")
-    port = int(os.getenv("PORT", 10000))
-    if os.getenv("ENVIRONMENT") == "production":
-        app.run(host="0.0.0.0", port=port)
+    print(f"Environment: {os.getenv('ENVIRONMENT', 'development')}")
+    
+    if os.getenv('PYTHONANYWHERE_SITE'):
+        # Running on PythonAnywhere
+        app.run()
     else:
+        # Running locally
+        port = int(os.getenv("PORT", 5000))
         app.run(debug=True, host="0.0.0.0", port=port)
